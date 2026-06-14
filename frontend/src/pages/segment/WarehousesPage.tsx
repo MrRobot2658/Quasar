@@ -6,8 +6,7 @@ import { StatCards, StatusPill, EmptyState } from "../../components/segment/kit"
 import { useTenant } from "../../context/TenantContext";
 import { useLang } from "../../context/LangContext";
 import { listWarehouses, createWarehouse, syncWarehouse, type Warehouse } from "../../api/connections";
-
-const TYPE_OPTIONS = ["doris", "mysql", "postgres", "hive"];
+import { connectorByKey, groupBySurface, categoryLabel } from "../../lib/connectors";
 
 function tone(s: string) {
   if (s === "healthy") return "green" as const;
@@ -78,12 +77,12 @@ export default function WarehousesPage() {
             <Card key={w.warehouse_id} className="flex h-full flex-col p-5">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                  <Database className="h-5 w-5" />
+                  {(() => { const Icon = connectorByKey(w.warehouse_type)?.icon ?? Database; return <Icon className="h-5 w-5" />; })()}
                 </div>
                 <StatusPill tone={tone(w.status)}>{w.status}</StatusPill>
               </div>
               <div className="font-semibold text-gray-900">{w.warehouse_name}</div>
-              <div className="text-[11px] uppercase tracking-wide text-gray-400">{w.warehouse_type}</div>
+              <div className="text-[11px] uppercase tracking-wide text-gray-400">{connectorByKey(w.warehouse_type)?.label ?? w.warehouse_type}</div>
               <div className="mt-1 text-sm text-gray-500">{tr("最近同步", "Last sync")} {w.last_sync_time || "—"}</div>
               {w.tables_synced && w.tables_synced.length > 0 && (
                 <div className="mt-1 text-xs text-gray-400">{tr("已同步", "Synced")} {w.tables_synced.length} {tr("张表", "tables")}</div>
@@ -105,7 +104,11 @@ export default function WarehousesPage() {
             <span className="mb-1 block text-sm font-medium text-gray-700">{tr("类型", "Type")}</span>
             <select className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
               value={type} onChange={(e) => setType(e.target.value)}>
-              {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+              {groupBySurface("warehouse").map((g) => (
+                <optgroup key={g.category} label={categoryLabel(g.category, tr)}>
+                  {g.items.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </optgroup>
+              ))}
             </select>
           </label>
           <TextField label={tr("连接串", "Connection string")} value={conn} onChange={setConn} placeholder="host:port" />

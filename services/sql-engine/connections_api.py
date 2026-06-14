@@ -27,7 +27,7 @@ from objects import ObjectError, ObjectService
 
 class SourceCreate(BaseModel):
     source_name: str
-    source_type: str = Field(description="csv/mysql/kafka/api/javascript 等")
+    source_type: str = Field(description="连接器类型：csv/api/javascript/kafka · mysql/postgres/sqlserver/oracle/clickhouse/mongodb/elasticsearch · snowflake/bigquery/redshift · iceberg/delta/s3")
     config: dict[str, Any] = Field(default_factory=dict)
     schema_def: dict[str, Any] | None = Field(default=None, alias="schema")
 
@@ -82,7 +82,7 @@ class ReverseEtlJobCreate(BaseModel):
 
 class WarehouseCreate(BaseModel):
     warehouse_name: str
-    warehouse_type: str = Field(description="doris/mysql/postgres/hive")
+    warehouse_type: str = Field(description="数仓/库类型：doris/hive/mysql/postgres/clickhouse · snowflake/bigquery/redshift · iceberg/delta")
     connection_string: str = ""
     username: str = ""
     password: str = ""

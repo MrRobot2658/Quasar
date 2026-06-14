@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  FileSpreadsheet, Database, Radio, Cloud, Plus, ArrowRight, Workflow, KeyRound, Copy,
+  FileSpreadsheet, Cloud, Plus, ArrowRight, Workflow, KeyRound, Copy,
 } from "lucide-react";
 import Layout from "../components/layout/Layout";
 import { Card, Button, Spinner, Modal, TextField } from "../components/ui";
@@ -9,18 +9,7 @@ import { StatCards, StatusPill, EmptyState } from "../components/segment/kit";
 import { useTenant } from "../context/TenantContext";
 import { useLang } from "../context/LangContext";
 import { listSources, createSource, type Source } from "../api/connections";
-
-// 数据源类型目录（对标 Segment Connections › Sources Catalog）。
-function typeMeta(tr: (zh: string, en?: string) => string): Record<string, { icon: typeof FileSpreadsheet; label: string }> {
-  return {
-    csv: { icon: FileSpreadsheet, label: tr("CSV / 粘贴", "CSV / Paste") },
-    mysql: { icon: Database, label: "MySQL" },
-    kafka: { icon: Radio, label: "Kafka" },
-    api: { icon: Cloud, label: "REST API" },
-    javascript: { icon: Cloud, label: "JavaScript" },
-  };
-}
-const TYPE_OPTIONS = ["csv", "mysql", "kafka", "api", "javascript"];
+import { connectorByKey, groupBySurface, categoryLabel } from "../lib/connectors";
 
 function statusTone(s: string) {
   if (s === "active") return "green" as const;
@@ -31,7 +20,6 @@ function statusTone(s: string) {
 export default function ConnectionsPage() {
   const { tenant } = useTenant();
   const { tr } = useLang();
-  const TYPE_META = typeMeta(tr);
   const [sources, setSources] = useState<Source[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -105,7 +93,8 @@ export default function ConnectionsPage() {
       {sources && sources.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sources.map((s) => {
-            const meta = TYPE_META[s.source_type] || { icon: Cloud, label: s.source_type };
+            const c = connectorByKey(s.source_type);
+            const meta = { icon: c?.icon ?? Cloud, label: c?.label ?? s.source_type };
             return (
               <Link key={s.source_id} to={`/connections/sources/${s.source_id}`}>
                 <Card className="flex h-full flex-col p-5 transition-shadow hover:shadow-md">
@@ -159,7 +148,11 @@ export default function ConnectionsPage() {
                 value={type}
                 onChange={(e) => setType(e.target.value)}
               >
-                {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{TYPE_META[t]?.label || t}</option>)}
+                {groupBySurface("source").map((g) => (
+                  <optgroup key={g.category} label={categoryLabel(g.category, tr)}>
+                    {g.items.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </label>
             <div className="flex justify-end gap-2">
