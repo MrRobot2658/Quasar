@@ -1,4 +1,4 @@
-package com.datalake.flink;
+package com.agenticdmp.flink;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.configuration.Configuration;
@@ -236,8 +236,8 @@ public class IdMappingFunction extends KeyedProcessFunction<String, UserEvent, E
         public String redisHost = "redis";
         public int redisPort = 6379;
         public int redisTtlSeconds = 2_592_000;
-        public String mysqlUrl = "jdbc:mysql://mysql:3306/datalake";
-        public String mysqlUser = "datalake";
-        public String mysqlPassword = "datalake123";
+        public String mysqlUrl = "jdbc:mysql://mysql:3306/agenticdmp";
+        public String mysqlUser = "agenticdmp";
+        public String mysqlPassword = "agenticdmp123";
     }
 }

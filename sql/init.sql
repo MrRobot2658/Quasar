@@ -1,8 +1,8 @@
 -- 多租户实时 ID-Mapping 开发环境初始化
 -- 业务数据库: MySQL
 
-CREATE DATABASE IF NOT EXISTS datalake DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE datalake;
+CREATE DATABASE IF NOT EXISTS agenticdmp DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE agenticdmp;
 
 -- 租户配置
 CREATE TABLE IF NOT EXISTS tenants (

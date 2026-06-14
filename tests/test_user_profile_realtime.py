@@ -130,7 +130,7 @@ def _send_profile_event(topic: str, tenant_id: int, event: dict):
     payload = json.dumps(event, ensure_ascii=False)
     proc = subprocess.run(
         [
-            "docker", "exec", "-i", "datalake-kafka",
+            "docker", "exec", "-i", "agenticdmp-kafka",
             "kafka-console-producer",
             "--bootstrap-server", "kafka:29092",
             "--topic", topic,

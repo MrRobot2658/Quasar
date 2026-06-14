@@ -131,9 +131,9 @@ def _mysql_conn():
         return pymysql.connect(
             host=os.getenv("TEST_MYSQL_HOST", "localhost"),
             port=int(os.getenv("TEST_MYSQL_PORT", "3308")),
-            user=os.getenv("TEST_MYSQL_USER", "datalake"),
-            password=os.getenv("TEST_MYSQL_PASSWORD", "datalake123"),
-            database=os.getenv("TEST_MYSQL_DATABASE", "datalake"),
+            user=os.getenv("TEST_MYSQL_USER", "agenticdmp"),
+            password=os.getenv("TEST_MYSQL_PASSWORD", "agenticdmp123"),
+            database=os.getenv("TEST_MYSQL_DATABASE", "agenticdmp"),
             charset="utf8mb4",
             autocommit=True,
         )

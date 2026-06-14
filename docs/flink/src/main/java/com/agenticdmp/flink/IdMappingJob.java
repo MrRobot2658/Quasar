@@ -1,4 +1,4 @@
-package com.datalake.flink;
+package com.agenticdmp.flink;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -18,7 +18,7 @@ import org.apache.flink.util.Collector;
  * Kafka(user-events) → IdMappingFunction → Kafka(enriched-events)
  *
  * 提交示例:
- *   flink run -c com.datalake.flink.IdMappingJob target/user-profile-flink-jobs-1.0.0.jar \
+ *   flink run -c com.agenticdmp.flink.IdMappingJob target/user-profile-flink-jobs-1.0.0.jar \
  *     --tenant-id 1001 \
  *     --kafka-bootstrap kafka:9092 \
  *     --source-topic tenant-1001-events \
@@ -117,9 +117,9 @@ public class IdMappingJob {
         String sinkTopic = "enriched-1001-events";
         String redisHost = "redis";
         int redisPort = 6379;
-        String mysqlUrl = "jdbc:mysql://mysql:3306/datalake";
-        String mysqlUser = "datalake";
-        String mysqlPassword = "datalake123";
+        String mysqlUrl = "jdbc:mysql://mysql:3306/agenticdmp";
+        String mysqlUser = "agenticdmp";
+        String mysqlPassword = "agenticdmp123";
         int parallelism = 4;
 
         static JobParams parse(String[] args) {

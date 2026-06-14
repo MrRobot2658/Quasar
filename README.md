@@ -1,8 +1,8 @@
-# Datalake · 多租户 CDP（对标 Twilio Segment）
+# AgenticDMP · 多租户 CDP（对标 Twilio Segment）
 
 一套本地可跑的客户数据平台（CDP）开发环境：后端是**多租户实时 ID-Mapping + 画像宽表 + 圈人引擎**，前端是**对标 [Twilio Segment](https://www.twilio.com/docs/segment) 的控制台**（连接 → 统一 → 触达 → 协议 → 隐私 → 监控）。
 
-**仓库**：https://github.com/MrRobot2658/datalake
+**仓库**：https://github.com/MrRobot2658/agenticdmp
 
 > 设计文档：[模块产品文档](./docs/modules/README.md)（分模块 详细/技术设计 + TODOs）· [docs/design.md](./docs/design.md)（Kafka/Flink/MySQL/Doris 宽表）· [scale-comparison](./docs/scale-comparison.md)（dev→2亿）· [Flink Job 模板](./docs/flink/README.md) · [MCP 调用链路](./docs/MCP调用链路.md) · [前端说明](./frontend/README.md)
 
@@ -120,8 +120,8 @@
 
 ```bash
 # 0. 克隆
-git clone https://github.com/MrRobot2658/datalake.git   # 或 SSH: git@github.com:MrRobot2658/datalake.git
-cd datalake
+git clone https://github.com/MrRobot2658/agenticdmp.git   # 或 SSH: git@github.com:MrRobot2658/agenticdmp.git
+cd agenticdmp
 
 # 1. 启动后端全栈（MySQL/Redis/Kafka/SQL Engine/ID-Mapping/Nginx）
 docker compose up -d --build
@@ -154,7 +154,7 @@ npm run dev                             # → http://localhost:5173/
 | CDP 控制台（生产/网关） | http://localhost:8080/console/ |
 | SQL Engine Swagger | http://localhost:8002/docs |
 | ID-Mapping Swagger | http://localhost:8001/docs |
-| MySQL | `localhost:3308` · db `datalake` · user `datalake` / `datalake123` |
+| MySQL | `localhost:3308` · db `agenticdmp` · user `agenticdmp` / `agenticdmp123` |
 
 **真实 vs Mock**：带「Mock 数据」角标的页面是前端演示，未接后端、改动不落库。**真实数据页**（数据源导入、用户档案 Profiles、受众 Audiences、计算特征）走 SQL Engine→MySQL，操作即落库。
 

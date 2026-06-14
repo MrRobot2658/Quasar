@@ -12,7 +12,7 @@
 -- 模块：00-platform 01-connections 02-unify 03-objects 04-accounts
 --       05-engage 06-protocols 07-privacy 08-monitor 09-settings
 -- ════════════════════════════════════════════════════════════════════════
-USE datalake;
+USE agenticdmp;
 
 -- ── 幂等 DDL 辅助存储过程（添加列 / 添加索引时先检查信息架构）──────────────
 DROP PROCEDURE IF EXISTS _add_col;

@@ -1,5 +1,5 @@
 -- Segment（人群规则）保存（文档 Ch4：用户确认后走现有保存链路）
-USE datalake;
+USE agenticdmp;
 
 CREATE TABLE IF NOT EXISTS segments (
     segment_id      BIGINT NOT NULL AUTO_INCREMENT,

@@ -4,7 +4,7 @@
 -- 本地用 MySQL 模拟 Doris 对象表；跨对象 JOIN 经 object_relations 实现。
 -- 幂等：CREATE IF NOT EXISTS / INSERT IGNORE
 -- ────────────────────────────────────────────────────────────────────────
-USE datalake;
+USE agenticdmp;
 
 -- ── Lead 线索 ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS object_lead (

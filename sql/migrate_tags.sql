@@ -1,4 +1,4 @@
-USE datalake;
+USE agenticdmp;
 
 CREATE TABLE IF NOT EXISTS tag_definitions (
     tenant_id       BIGINT NOT NULL,

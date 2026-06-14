@@ -25,9 +25,9 @@ class MysqlOlapExecutor(OlapExecutor):
         self.config = {
             "host": os.getenv("OLAP_HOST", "localhost"),
             "port": int(os.getenv("OLAP_PORT", "3308")),
-            "user": os.getenv("OLAP_USER", "datalake"),
-            "password": os.getenv("OLAP_PASSWORD", "datalake123"),
-            "database": os.getenv("OLAP_DATABASE", "datalake"),
+            "user": os.getenv("OLAP_USER", "agenticdmp"),
+            "password": os.getenv("OLAP_PASSWORD", "agenticdmp123"),
+            "database": os.getenv("OLAP_DATABASE", "agenticdmp"),
             "charset": "utf8mb4",
             "cursorclass": pymysql.cursors.DictCursor,
         }

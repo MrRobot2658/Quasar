@@ -30,7 +30,7 @@ done
 
 echo ""
 echo "========== MySQL 直接查询 (tenant=$TENANT_ID) =========="
-docker exec datalake-mysql mysql -udatalake -pdatalake123 datalake -e "
+docker exec agenticdmp-mysql mysql -uagenticdmp -pagenticdmp123 agenticdmp -e "
   SELECT tenant_id, channel_type, channel_id, one_id, source FROM id_mapping WHERE tenant_id=$TENANT_ID ORDER BY one_id;
   SELECT tenant_id, user_id, tags, properties FROM user_profile WHERE tenant_id=$TENANT_ID;
 " 2>/dev/null

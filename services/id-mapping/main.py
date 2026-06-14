@@ -24,9 +24,9 @@ logger = logging.getLogger("id-mapping")
 MYSQL_CONFIG = {
     "host": os.getenv("MYSQL_HOST", "localhost"),
     "port": int(os.getenv("MYSQL_PORT", "3306")),
-    "user": os.getenv("MYSQL_USER", "datalake"),
-    "password": os.getenv("MYSQL_PASSWORD", "datalake123"),
-    "database": os.getenv("MYSQL_DATABASE", "datalake"),
+    "user": os.getenv("MYSQL_USER", "agenticdmp"),
+    "password": os.getenv("MYSQL_PASSWORD", "agenticdmp123"),
+    "database": os.getenv("MYSQL_DATABASE", "agenticdmp"),
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
     "autocommit": True,

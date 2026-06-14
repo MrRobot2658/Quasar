@@ -1,5 +1,5 @@
 -- 增量迁移：Doris 模拟层（已有环境执行一次即可）
-USE datalake;
+USE agenticdmp;
 
 CREATE TABLE IF NOT EXISTS doris_id_mapping (
     tenant_id       BIGINT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS doris_user_wide (
 -- 兼容旧环境：补充 form_id 列
 SET @col_exists := (
     SELECT COUNT(*) FROM information_schema.COLUMNS
-    WHERE TABLE_SCHEMA = 'datalake' AND TABLE_NAME = 'doris_user_wide' AND COLUMN_NAME = 'form_id'
+    WHERE TABLE_SCHEMA = 'agenticdmp' AND TABLE_NAME = 'doris_user_wide' AND COLUMN_NAME = 'form_id'
 );
 SET @ddl := IF(
     @col_exists = 0,

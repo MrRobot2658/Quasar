@@ -94,7 +94,7 @@ export default function Sidebar() {
           </svg>
         </div>
         <div>
-          <div className="text-sm font-bold tracking-tight text-gray-900">Agentic CDP</div>
+          <div className="text-sm font-bold tracking-tight text-gray-900">AgenticDMP</div>
           <div className="text-[11px] text-gray-400">{t("brandSub")}</div>
         </div>
       </div>

@@ -1,14 +1,16 @@
+name: agenticdmp
+
 services:
   mysql:
     image: mysql:8.0
-    container_name: datalake-mysql
+    container_name: agenticdmp-mysql
     ports:
       - "3308:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: datalake
-      MYSQL_USER: datalake
-      MYSQL_PASSWORD: datalake123
+      MYSQL_DATABASE: agenticdmp
+      MYSQL_USER: agenticdmp
+      MYSQL_PASSWORD: agenticdmp123
     volumes:
       - mysql_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -19,11 +21,11 @@ services:
       timeout: 5s
       retries: 20
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   redis:
     image: redis:7-alpine
-    container_name: datalake-redis
+    container_name: agenticdmp-redis
     ports:
       - "6381:6379"
     volumes:
@@ -34,20 +36,20 @@ services:
       timeout: 3s
       retries: 10
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
-    container_name: datalake-zookeeper
+    container_name: agenticdmp-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka
+    container_name: agenticdmp-kafka
     depends_on:
       - zookeeper
     ports:
@@ -68,11 +70,11 @@ services:
       timeout: 10s
       retries: 10
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   kafka-init:
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka-init
+    container_name: agenticdmp-kafka-init
     depends_on:
       kafka:
         condition: service_healthy
@@ -99,11 +101,11 @@ services:
           --topic enriched-1001-events --partitions $$PP --replication-factor $$RF
         echo "Kafka topics ready (tier=$${SCALE_TIER:-dev}, partitions=$$PP/$$PS/$$PSH)"
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: datalake-kafka-ui
+    container_name: agenticdmp-kafka-ui
     depends_on:
       - kafka
     ports:
@@ -113,11 +115,11 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       DYNAMIC_CONFIG_ENABLED: "true"
     networks:
-      - datalake-net
+      - agenticdmp-net
 
   nginx:
     image: nginx:1.27-alpine
-    container_name: datalake-nginx
+    container_name: agenticdmp-nginx
     depends_on:
       - id-mapping
       - sql-engine
@@ -129,7 +131,7 @@ services:
       # CDP 控制台：本地 `cd frontend && npm run build` 产出 dist/，由 nginx 托管于 /console/
       - ./frontend/dist:/usr/share/nginx/console:ro
     networks:
-      - datalake-net
+      - agenticdmp-net
     restart: unless-stopped
 
   id-mapping:
@@ -150,9 +152,9 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-      MYSQL_USER: datalake
-      MYSQL_PASSWORD: datalake123
-      MYSQL_DATABASE: datalake
+      MYSQL_USER: agenticdmp
+      MYSQL_PASSWORD: agenticdmp123
+      MYSQL_DATABASE: agenticdmp
       REDIS_HOST: redis
       REDIS_PORT: 6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -160,7 +162,7 @@ services:
       REDIS_TTL_SECONDS: 2592000
       ROOT_PATH: /ID-Mapping
     networks:
-      - datalake-net
+      - agenticdmp-net
     restart: unless-stopped
 
   sql-engine:
@@ -178,9 +180,9 @@ services:
       OLAP_BACKEND: mysql
       OLAP_HOST: mysql
       OLAP_PORT: 3306
-      OLAP_USER: datalake
-      OLAP_PASSWORD: datalake123
-      OLAP_DATABASE: datalake
+      OLAP_USER: agenticdmp
+      OLAP_PASSWORD: agenticdmp123
+      OLAP_DATABASE: agenticdmp
       SCALE_TIER: ${SCALE:-dev}
       DORIS_BE_SHARDS: ${DORIS_BE_SHARDS:-1}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
@@ -188,7 +190,7 @@ services:
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
       ROOT_PATH: "/SQL Engine"
     networks:
-      - datalake-net
+      - agenticdmp-net
     restart: unless-stopped
 
 volumes:
@@ -196,5 +198,5 @@ volumes:
   redis_data:
 
 networks:
-  datalake-net:
+  agenticdmp-net:
     driver: bridge

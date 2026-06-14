@@ -12,7 +12,7 @@ docs/flink/
 │   ├── job-01-ddl-connectors.sql    # Connector / 源表 / 结果表 DDL
 │   ├── job-02-profile-aggregation.sql
 │   └── job-03-wide-table.sql
-└── src/main/java/com/datalake/flink/
+└── src/main/java/com/agenticdmp/flink/
     ├── UserEvent.java               # 入站事件模型
     ├── EnrichedEvent.java           # 富化事件模型
     ├── IdMappingFunction.java       # 核心合并逻辑
@@ -49,9 +49,9 @@ doris.username=root
 doris.password=
 
 # MySQL（发号器）
-mysql.jdbc.url=jdbc:mysql://mysql:3306/datalake
-mysql.username=datalake
-mysql.password=datalake123
+mysql.jdbc.url=jdbc:mysql://mysql:3306/agenticdmp
+mysql.username=agenticdmp
+mysql.password=agenticdmp123
 
 # 租户
 tenant.id=1001
@@ -68,7 +68,7 @@ mvn clean package -DskipTests
 提交：
 
 ```bash
-flink run -c com.datalake.flink.IdMappingJob \
+flink run -c com.agenticdmp.flink.IdMappingJob \
   target/user-profile-flink-jobs-1.0.0.jar \
   --tenant-id 1001 \
   --kafka-source tenant-1001-events \

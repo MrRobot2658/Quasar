@@ -3,7 +3,7 @@
 
 x-scale-common: &scale-common
   networks:
-    - datalake-net
+    - agenticdmp-net
 
 services:
   mysql:
@@ -30,7 +30,7 @@ services:
   redis-2:
     profiles: [scale-medium, scale-large, scale-xlarge]
     image: redis:7-alpine
-    container_name: datalake-redis-2
+    container_name: agenticdmp-redis-2
     <<: *scale-common
     deploy:
       resources:
@@ -47,7 +47,7 @@ services:
   redis-3:
     profiles: [scale-large, scale-xlarge]
     image: redis:7-alpine
-    container_name: datalake-redis-3
+    container_name: agenticdmp-redis-3
     <<: *scale-common
     deploy:
       resources:
@@ -64,7 +64,7 @@ services:
   kafka-2:
     profiles: [scale-medium, scale-large, scale-xlarge]
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka-2
+    container_name: agenticdmp-kafka-2
     depends_on:
       - zookeeper
     <<: *scale-common
@@ -81,7 +81,7 @@ services:
   kafka-3:
     profiles: [scale-large, scale-xlarge]
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka-3
+    container_name: agenticdmp-kafka-3
     depends_on:
       - zookeeper
     <<: *scale-common
@@ -98,7 +98,7 @@ services:
   kafka-4:
     profiles: [scale-xlarge]
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka-4
+    container_name: agenticdmp-kafka-4
     depends_on:
       - zookeeper
     <<: *scale-common
@@ -114,7 +114,7 @@ services:
   kafka-5:
     profiles: [scale-xlarge]
     image: confluentinc/cp-kafka:7.6.1
-    container_name: datalake-kafka-5
+    container_name: agenticdmp-kafka-5
     depends_on:
       - zookeeper
     <<: *scale-common

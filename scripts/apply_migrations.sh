@@ -1,12 +1,12 @@
 #!/bin/bash
-# 应用 sql/migrate_*.sql 增量迁移到 datalake-mysql
+# 应用 sql/migrate_*.sql 增量迁移到 agenticdmp-mysql
 # 关键：用 --default-character-set=utf8mb4 避免管道导入中文乱码（双重编码）
 set -euo pipefail
 
-CONTAINER="${MYSQL_CONTAINER:-datalake-mysql}"
-DB="${MYSQL_DATABASE:-datalake}"
-USER="${MYSQL_USER:-datalake}"
-PASS="${MYSQL_PASSWORD:-datalake123}"
+CONTAINER="${MYSQL_CONTAINER:-agenticdmp-mysql}"
+DB="${MYSQL_DATABASE:-agenticdmp}"
+USER="${MYSQL_USER:-agenticdmp}"
+PASS="${MYSQL_PASSWORD:-agenticdmp123}"
 DIR="$(cd "$(dirname "$0")/.." && pwd)/sql"
 
 echo "== 应用迁移到 $CONTAINER/$DB =="

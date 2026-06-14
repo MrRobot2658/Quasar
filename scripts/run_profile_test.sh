@@ -22,9 +22,9 @@ done
 
 echo ""
 echo "========== 2. 执行数据库迁移 =========="
-docker exec -i datalake-mysql mysql -udatalake -pdatalake123 datalake < sql/migrate_doris.sql
-docker exec -i datalake-mysql mysql -udatalake -pdatalake123 datalake < sql/migrate_groups.sql
-docker exec -i datalake-mysql mysql -udatalake -pdatalake123 --default-character-set=utf8mb4 datalake < sql/migrate_tags.sql
+docker exec -i agenticdmp-mysql mysql -uagenticdmp -pagenticdmp123 agenticdmp < sql/migrate_doris.sql
+docker exec -i agenticdmp-mysql mysql -uagenticdmp -pagenticdmp123 agenticdmp < sql/migrate_groups.sql
+docker exec -i agenticdmp-mysql mysql -uagenticdmp -pagenticdmp123 --default-character-set=utf8mb4 agenticdmp < sql/migrate_tags.sql
 
 echo ""
 echo "========== 3. 安装测试依赖 =========="
