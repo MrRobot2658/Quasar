@@ -80,9 +80,14 @@ def scheduler_health():
 def deploy_and_run(tenant_id: int, pipeline_name: str, nodes: list, edges: list, run: bool = True) -> dict:
     """供 connections_api 的 execute_pipeline 调用：触发 Airflow DAG 运行该 pipeline。"""
     out: dict = {"engine": "airflow", "reachable": True, "ui_url": AIRFLOW_UI, "dag_id": AIRFLOW_DAG_ID}
+    # 把节点列表（精简后）放进 conf，DAG 据此动态展开为多任务；上限 100 个，控制 conf 体积
+    conf_nodes = [{
+        "id": n.get("id"), "label": n.get("label"),
+        "type": n.get("type"), "kind": n.get("kind"),
+    } for n in (nodes or [])][:100]
     conf = {
         "tenant_id": tenant_id, "pipeline_name": pipeline_name,
-        "nodes": len(nodes or []), "edges": len(edges or []),
+        "nodes": conf_nodes, "node_count": len(nodes or []), "edge_count": len(edges or []),
     }
     try:
         self_unpause = _client.ensure_unpaused

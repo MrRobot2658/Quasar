@@ -171,7 +171,7 @@ npm run dev                             # → http://localhost:5173/
 「连接 › 可视化编排」拖拽节点连线 → **保存为管道**；在「管道 Pipelines」页点**执行**，SQL Engine 通过 Airflow REST API 触发 DAG 真实运行（管道页顶部有 Airflow 连接状态条 + 「打开 Airflow」入口）。
 
 - 调度后端：单容器 Airflow（scheduler + webserver，SQLite + SequentialExecutor），UI `http://localhost:8088`（`admin`/`admin`）。
-- 承载 DAG：`airflow/dags/agenticdatahub_pipeline.py` —— 一个**参数化通用 DAG**，所有管道运行共用；触发时把 `tenant_id / pipeline_name / 节点数` 放进 `dag_run.conf`，无需为每个管道单独建 DAG。
+- 承载 DAG：`airflow/dags/agenticdatahub_pipeline.py` —— 一个**参数化通用 DAG**，所有管道运行共用；触发时把 `tenant_id / pipeline_name / 节点列表` 放进 `dag_run.conf`。DAG 用**动态任务映射**（`.expand`）在运行时按 conf 的节点数**展开成多任务**：`plan → run_node × N → finish`，每个画布节点对应一个 task 实例（无需为每个管道单独建 DAG）。画布连线顺序（edges）暂未体现为任务依赖，mapped 任务并行执行。
 - 接口：`POST /api/connections/pipelines/{id}/execute` 触发；`GET /api/connections/scheduler/health` 查连通性。Airflow 不可达时执行会**优雅降级**为本地模拟（不报错）。
 - 配置（`docker-compose.yml` 的 sql-engine 环境变量）：`AIRFLOW_API_URL` / `AIRFLOW_USER` / `AIRFLOW_PASSWORD` / `AIRFLOW_DAG_ID` / `AIRFLOW_UI_URL`。
 - 改/加 DAG：编辑 `airflow/dags/` 下的 py 文件（已挂载进容器），Airflow scheduler 约 30s 内自动加载。
