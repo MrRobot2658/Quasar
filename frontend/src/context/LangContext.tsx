@@ -17,10 +17,13 @@ interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (k: DictKey) => string;
+  /** 内联双语：tr("中文", "English")，按当前语言取值（en 缺省回退中文）。 */
+  tr: (zh: string, en?: string) => string;
 }
 
 const Ctx = createContext<LangCtx>({
   lang: "zh", setLang: () => {}, t: (k) => DICT[k]?.zh ?? String(k),
+  tr: (zh) => zh,
 });
 
 const STORAGE_KEY = "cdp_lang";
@@ -41,8 +44,9 @@ export function LangProvider({ children }: { children: ReactNode }) {
   }, [lang]);
 
   const t = (k: DictKey) => DICT[k]?.[lang] ?? String(k);
+  const tr = (zh: string, en?: string) => (lang === "en" ? (en ?? zh) : zh);
 
-  return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ lang, setLang, t, tr }}>{children}</Ctx.Provider>;
 }
 
 export const useLang = () => useContext(Ctx);
