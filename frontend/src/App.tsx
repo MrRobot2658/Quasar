@@ -58,6 +58,7 @@ import SettingsGeneralPage from "./pages/segment/SettingsGeneralPage";
 import AccessPage from "./pages/segment/AccessPage";
 import TokensPage from "./pages/segment/TokensPage";
 import AuditPage from "./pages/segment/AuditPage";
+import SettingsMcpPage from "./pages/segment/SettingsMcpPage";
 
 // 生产挂在 /console 下，dev 用根路径
 const BASENAME = import.meta.env.PROD ? "/console" : "/";
@@ -131,6 +132,7 @@ export default function App() {
           <Route path="/settings/access" element={<AccessPage />} />
           <Route path="/settings/tokens" element={<TokensPage />} />
           <Route path="/settings/audit" element={<AuditPage />} />
+          <Route path="/settings/mcp" element={<SettingsMcpPage />} />
           <Route path="/settings/tenants" element={<TenantsPage />} />
           <Route path="/settings/tenants/:id" element={<TenantDetailPage />} />
 

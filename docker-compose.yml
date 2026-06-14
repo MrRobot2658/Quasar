@@ -121,15 +121,63 @@ services:
     image: nginx:1.27-alpine
     container_name: agenticdatahub-nginx
     depends_on:
-      - id-mapping
-      - sql-engine
+      id-mapping:
+        condition: service_started
+      sql-engine:
+        condition: service_started
+      assistant:
+        condition: service_started
+      frontend:
+        condition: service_completed_successfully
     ports:
       - "8080:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/html:/usr/share/nginx/html:ro
-      # CDP 控制台：本地 `cd frontend && npm run build` 产出 dist/，由 nginx 托管于 /console/
-      - ./frontend/dist:/usr/share/nginx/console:ro
+      # AgenticDataHub 控制台：由 frontend 服务生产构建产出，写入 frontend_dist 卷，nginx 托管于 /console/
+      - frontend_dist:/usr/share/nginx/console:ro
+    networks:
+      - agenticdatahub-net
+    restart: unless-stopped
+
+  # 前端：生产构建（一次性）→ 把 dist 写入 frontend_dist 卷，由 nginx 静态托管。
+  # 加入 compose 后随栈一起起，无需单独 npm run dev。
+  frontend:
+    image: node:20-bookworm-slim
+    container_name: agenticdatahub-frontend-build
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend_dist:/out
+    command: sh -c "npm ci && npm run build && rm -rf /out/* && cp -r dist/. /out/"
+    networks:
+      - agenticdatahub-net
+
+  # 智能助手：DeepSeek 对话 + 桥接 MCP（services/mcp 以 stdio 拉起）+ 后台任务（接 reverse-ETL 调度模拟）
+  assistant:
+    build:
+      context: ./services/assistant
+      dockerfile: Dockerfile
+    container_name: agenticdatahub-assistant
+    depends_on:
+      sql-engine:
+        condition: service_started
+    ports:
+      - "8004:8000"
+    env_file:
+      - .env
+    environment:
+      SQL_ENGINE_URL: http://sql-engine:8000
+      MCP_SERVER_PATH: /app/mcp/server.py
+      MCP_SQL_ENGINE_URL: http://sql-engine:8000
+      # MCP server 默认往 services/mcp/logs 写日志，但该目录以只读挂载，重定向到可写路径
+      MCP_LOG_DIR: /tmp/mcp-logs
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_API_BASE: ${DEEPSEEK_API_BASE:-https://api.deepseek.com}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+    volumes:
+      - ./services/mcp:/app/mcp:ro
     networks:
       - agenticdatahub-net
     restart: unless-stopped
@@ -196,6 +244,7 @@ services:
 volumes:
   mysql_data:
   redis_data:
+  frontend_dist:
 
 networks:
   agenticdatahub-net:

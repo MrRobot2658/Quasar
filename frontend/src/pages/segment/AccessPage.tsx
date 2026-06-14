@@ -28,6 +28,7 @@ const TABS = [
   { label: "权限管理", to: "/settings/access" },
   { label: "API 令牌", to: "/settings/tokens" },
   { label: "审计日志", to: "/settings/audit" },
+  { label: "MCP 设置", to: "/settings/mcp" },
 ];
 
 type View = "members" | "roles" | "teams" | "invitations";

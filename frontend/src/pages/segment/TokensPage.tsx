@@ -21,6 +21,7 @@ export default function TokensPage() {
     { label: tr("权限管理", "Access"), to: "/settings/access" },
     { label: tr("API 令牌", "API Tokens"), to: "/settings/tokens" },
     { label: tr("审计日志", "Audit Log"), to: "/settings/audit" },
+    { label: tr("MCP 设置", "MCP"), to: "/settings/mcp" },
   ];
 
   const COL = {

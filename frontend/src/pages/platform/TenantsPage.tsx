@@ -19,6 +19,7 @@ function buildTabs(tr: (zh: string, en: string) => string) {
     { label: tr("API 令牌", "API Tokens"), to: "/settings/tokens" },
     { label: tr("审计日志", "Audit Log"), to: "/settings/audit" },
     { label: tr("租户管理", "Tenants"), to: "/settings/tenants" },
+    { label: tr("MCP 设置", "MCP"), to: "/settings/mcp" },
   ];
 }
 

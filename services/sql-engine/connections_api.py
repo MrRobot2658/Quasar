@@ -445,6 +445,37 @@ class ConnectionsService:
             )
         return {"run_id": run_id, "status": "pending"}
 
+    def complete_reverse_etl_run(self, tenant_id: int, run_id: str,
+                                 status: str = "success", error_msg: str | None = None) -> dict:
+        """收尾一次 reverse-ETL 运行（pending → success/failed）。调度模拟的「后台跑完」回调。
+        duration_ms 取 start_time 到此刻的实际间隔；同步刷新任务的 last_status。"""
+        status = status if status in ("success", "failed") else "success"
+        with self._conn() as conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT job_id, start_time FROM connections_reverse_etl_runs "
+                "WHERE tenant_id=%s AND run_id=%s",
+                (tenant_id, run_id),
+            )
+            run = cur.fetchone()
+            if not run:
+                raise HTTPException(status_code=404, detail="运行记录不存在")
+            cur.execute(
+                """
+                UPDATE connections_reverse_etl_runs
+                SET status=%s, end_time=NOW(),
+                    duration_ms=TIMESTAMPDIFF(MICROSECOND, start_time, NOW()) DIV 1000,
+                    error_msg=%s
+                WHERE tenant_id=%s AND run_id=%s
+                """,
+                (status, error_msg, tenant_id, run_id),
+            )
+            cur.execute(
+                "UPDATE connections_reverse_etl_jobs SET last_status=%s "
+                "WHERE tenant_id=%s AND job_id=%s",
+                (status, tenant_id, run["job_id"]),
+            )
+        return {"run_id": run_id, "status": status}
+
     def _safe_estimate(self, tenant_id: int, source_object: str) -> int:
         try:
             res = self._objects.search(tenant_id, source_object, None, None, count_only=True)
@@ -725,6 +756,13 @@ def list_reverse_etl_runs(job_id: str, tenant_id: int = Query(...), limit: int =
 @router.post("/reverse-etl/jobs/{job_id}/run-now")
 def run_reverse_etl_now(job_id: str, tenant_id: int = Query(...)):
     return service.run_reverse_etl_now(tenant_id, job_id)
+
+
+@router.post("/reverse-etl/runs/{run_id}/complete")
+def complete_reverse_etl_run(run_id: str, tenant_id: int = Query(...),
+                             status: str = Query("success"), error_msg: str | None = Query(None)):
+    """收尾一次运行（pending → success/failed）。供调度/智能助手的后台任务回调。"""
+    return service.complete_reverse_etl_run(tenant_id, run_id, status, error_msg)
 
 
 # ── Warehouses ─────────────────────────────────────────────────────────────

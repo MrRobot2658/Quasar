@@ -14,6 +14,10 @@ export default defineConfig(({ command }) => ({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ""),
       },
+      "/assistant": {
+        target: process.env.ASSISTANT_URL || "http://localhost:8004",
+        changeOrigin: true,
+      },
     },
   },
 }));

@@ -1,6 +1,7 @@
 import { ChevronDown, Search } from "lucide-react";
 import { useTenant } from "../../context/TenantContext";
 import { useLang, type Lang } from "../../context/LangContext";
+import AssistantWidget from "../assistant/AssistantWidget";
 
 // 语言切换：中 / EN 分段开关
 function LangSwitch() {
@@ -37,6 +38,7 @@ export default function Header() {
         <span className="hidden sm:inline">{t("search")}</span>
       </div>
       <div className="flex items-center gap-3">
+        <AssistantWidget />
         <LangSwitch />
         <div className="relative">
           <select
