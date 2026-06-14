@@ -3,6 +3,7 @@ import { Boxes, Plus, Pencil, Trash2, GitBranch, Lock } from "lucide-react";
 import Layout from "../components/layout/Layout";
 import { Card, DataTable, Spinner, Button, Modal, TextField, Badge } from "../components/ui";
 import { StatCards } from "../components/segment/kit";
+import ObjectModelGraph from "../components/objects/ObjectModelGraph";
 import { useTenant } from "../context/TenantContext";
 import { useLang } from "../context/LangContext";
 import { byKey } from "../lib/objects";
@@ -51,14 +52,19 @@ export default function ObjectModelPage() {
   const [addFieldFor, setAddFieldFor] = useState<string | null>(null);
   const [editField, setEditField] = useState<{ obj: string; field: ObjectFieldDef } | null>(null);
   const [newRel, setNewRel] = useState(false);
+  const [tab, setTab] = useState<string>("");
 
   const reload = () => {
     setErr(null);
-    getDefinitions(tenant).then(setDefs).catch((e) => setErr(String(e)));
+    getDefinitions(tenant).then((d) => {
+      setDefs(d);
+      setTab((prev) => (prev && d.objects.some((o) => o.object === prev)) ? prev : (d.objects[0]?.object ?? ""));
+    }).catch((e) => setErr(String(e)));
   };
   useEffect(() => { setDefs(null); reload(); /* eslint-disable-next-line */ }, [tenant]);
 
   const objectKeys = useMemo(() => (defs?.objects ?? []).map((o) => o.object), [defs]);
+  const activeObj = useMemo(() => defs?.objects.find((o) => o.object === tab), [defs, tab]);
   const fieldTotal = useMemo(
     () => (defs?.objects ?? []).reduce((n, o) => n + (o.fields?.length ?? 0), 0),
     [defs],
@@ -90,6 +96,9 @@ export default function ObjectModelPage() {
 
       {defs && (
         <>
+          {/* 对象 ER 关系图（置顶） */}
+          <ObjectModelGraph objects={defs.objects} relations={defs.relations} />
+
           <StatCards items={[
             { label: tr("对象数", "Objects"), value: defs.objects.length },
             { label: tr("字段总数", "Total Fields"), value: fieldTotal },
@@ -97,17 +106,31 @@ export default function ObjectModelPage() {
             { label: tr("租户", "Tenant"), value: tenant },
           ]} />
 
-          {/* 对象与字段 */}
-          <div className="space-y-4">
+          {/* 对象与字段：每个对象一个 Tab */}
+          <div className="mb-4 flex flex-wrap gap-1 border-b border-gray-200">
             {defs.objects.map((o) => (
-              <ObjectCard
+              <button
                 key={o.object}
-                obj={o}
-                onAddField={() => setAddFieldFor(o.object)}
-                onEditField={(f) => setEditField({ obj: o.object, field: f })}
-              />
+                onClick={() => setTab(o.object)}
+                className={`-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                  tab === o.object
+                    ? "border-brand-500 text-brand-700"
+                    : "border-transparent text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                {objLabel(o.object)}
+                <span className="text-[11px] text-gray-400">{o.object}</span>
+              </button>
             ))}
           </div>
+          {activeObj && (
+            <ObjectCard
+              key={activeObj.object}
+              obj={activeObj}
+              onAddField={() => setAddFieldFor(activeObj.object)}
+              onEditField={(f) => setEditField({ obj: activeObj.object, field: f })}
+            />
+          )}
 
           {/* 关系矩阵 */}
           <div className="mb-3 mt-8 flex items-center gap-2 text-sm font-semibold text-gray-700">
