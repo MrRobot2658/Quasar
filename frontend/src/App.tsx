@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { TenantProvider } from "./context/TenantContext";
 import { LangProvider } from "./context/LangContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AssistantProvider } from "./context/AssistantContext";
+import AssistantShell from "./components/assistant/AssistantShell";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import KnowledgeBasePage from "./pages/KnowledgeBasePage";
@@ -94,6 +96,7 @@ export default function App() {
     <TenantProvider>
     <LangProvider>
     <AuthProvider>
+    <AssistantProvider>
       <BrowserRouter basename={BASENAME}>
         <Routes>
           {/* 公共路由：登录页 */}
@@ -104,6 +107,7 @@ export default function App() {
             path="/*"
             element={
               <RequireAuth>
+                <AssistantShell>
                 <Routes>
           {/* Overview */}
           <Route path="/" element={<Dashboard />} />
@@ -193,11 +197,13 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
+                </AssistantShell>
               </RequireAuth>
             }
           />
         </Routes>
       </BrowserRouter>
+    </AssistantProvider>
     </AuthProvider>
     </LangProvider>
     </TenantProvider>

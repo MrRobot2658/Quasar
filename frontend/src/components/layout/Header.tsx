@@ -1,9 +1,9 @@
-import { ChevronDown, LogOut, Search } from "lucide-react";
+import { ChevronDown, LogOut, Search, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTenant } from "../../context/TenantContext";
 import { useLang, type Lang } from "../../context/LangContext";
 import { useAuth } from "../../context/AuthContext";
-import AssistantWidget from "../assistant/AssistantWidget";
+import { useAssistant } from "../../context/AssistantContext";
 
 // 语言切换：中 / EN 分段开关
 function LangSwitch() {
@@ -34,6 +34,7 @@ export default function Header() {
   const { tenant, setTenant, tenants } = useTenant();
   const { t, tr } = useLang();
   const { user, logout } = useAuth();
+  const { open: assistantOpen, toggle: toggleAssistant } = useAssistant();
   const navigate = useNavigate();
   const initial = (user?.name || user?.email || "A").charAt(0).toUpperCase();
   return (
@@ -43,7 +44,17 @@ export default function Header() {
         <span className="hidden sm:inline">{t("search")}</span>
       </div>
       <div className="flex items-center gap-3">
-        <AssistantWidget />
+        <button
+          type="button"
+          onClick={toggleAssistant}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+            assistantOpen ? "bg-brand-500 text-white hover:bg-brand-600" : "bg-brand-50 text-brand-700 hover:bg-brand-100"
+          }`}
+          title={tr("智能助手", "Assistant")}
+        >
+          <Sparkles className="h-4 w-4" />
+          {tr("智能助手", "Assistant")}
+        </button>
         <LangSwitch />
         <div className="relative">
           <select

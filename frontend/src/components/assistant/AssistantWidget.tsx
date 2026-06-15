@@ -5,6 +5,7 @@ import { Spinner } from "../ui";
 import { useLang } from "../../context/LangContext";
 import { useTenant } from "../../context/TenantContext";
 import { useAuth } from "../../context/AuthContext";
+import { useAssistant } from "../../context/AssistantContext";
 import {
   chatAssistant,
   listAssistantTasks,
@@ -29,8 +30,8 @@ export default function AssistantWidget() {
   const { tr } = useLang();
   const { tenant } = useTenant();
   const { user } = useAuth();
+  const { open, setOpen } = useAssistant();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -104,11 +105,8 @@ export default function AssistantWidget() {
         { role: "assistant", content: res.reply, steps: res.steps, task: res.task, agentName: res.agent_name, created: res.created },
       ]);
       if (res.task?.run_id) pollTask(res.task.run_id);
-      // 助手要求「打开页面」：跳转并收起面板
-      if (res.navigate?.path) {
-        const path = res.navigate.path;
-        setTimeout(() => { setOpen(false); navigate(path); }, 400);
-      }
+      // 助手要求「打开页面」：直接跳转，侧边栏保持打开（内容在旁边切换）
+      if (res.navigate?.path) navigate(res.navigate.path);
     } catch (e: any) {
       const errText = e?.response?.data?.detail || e?.message || tr("请求失败", "Request failed");
       setMessages((prev) => [...prev, { role: "assistant", content: String(errText) }]);
@@ -118,18 +116,12 @@ export default function AssistantWidget() {
   }
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100"
-      >
-        <Sparkles className="h-4 w-4" />
-        {tr("智能助手", "Assistant")}
-      </button>
-
-      {open && (
-        <div className="fixed right-4 top-16 z-50 flex h-[70vh] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-gray-200 bg-white shadow-xl">
+    <aside
+      className={`fixed right-0 top-0 z-40 flex h-screen w-full flex-col border-l border-gray-200 bg-white shadow-xl transition-transform duration-300 ease-out lg:w-[400px] ${
+        open ? "translate-x-0" : "translate-x-full"
+      }`}
+      aria-hidden={!open}
+    >
           {/* 头部 */}
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
@@ -186,7 +178,6 @@ export default function AssistantWidget() {
                   {m.created && (
                     <Link
                       to={m.created.path}
-                      onClick={() => setOpen(false)}
                       className="mt-2 inline-flex items-center gap-1 rounded-lg bg-brand-50 px-2 py-1 text-[11px] font-medium text-brand-700 ring-1 ring-inset ring-brand-200 hover:bg-brand-100"
                     >
                       {m.created.kind === "dashboard" ? tr("打开看板", "Open dashboard") : tr("打开分析", "Open analytics")} · {m.created.title}
@@ -250,8 +241,6 @@ export default function AssistantWidget() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </>
+    </aside>
   );
 }

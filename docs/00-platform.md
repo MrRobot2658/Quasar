@@ -221,7 +221,9 @@
 
 ## 智能助手（多智能体）
 
-控制台右上角常驻的对话助手，独立服务 `services/assistant`（`:8004`，compose `assistant`），经 nginx `/assistant/*` 暴露；前端 `components/assistant/AssistantWidget.tsx` + `api/assistant.ts`。
+控制台对话助手，独立服务 `services/assistant`（`:8004`，compose `assistant`），经 nginx `/assistant/*` 暴露；前端 `components/assistant/AssistantWidget.tsx` + `api/assistant.ts`。
+
+- **UI：右侧停靠侧边栏（toggle）**：顶栏「智能助手」按钮开/合一个**整高右侧侧边栏**；打开时**主内容右移让位**（lg+，互不遮挡），移动端全屏覆盖。开合状态由 `context/AssistantContext` 管理并持久化（`localStorage`）；`components/assistant/AssistantShell.tsx` 包裹受保护路由提供「推开」布局并挂载侧边栏。助手「打开页面」时侧边栏保持打开，内容在旁边切换。
 
 - **多智能体架构**：`/chat` 先由**路由器**（DeepSeek 分类，失败降级关键词）判定意图，分派给专职智能体，各有独立系统提示与工具集：
   - **data 数据查询** —— 桥接 CDP **MCP server**（stdio，`services/mcp/server.py`）的 41 个只读 `cdp_*` 工具。
