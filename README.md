@@ -14,7 +14,7 @@
 
 ## 一、架构介绍
 
-目标架构（数据链路层级，自上而下；详见 [00-platform](./docs/modules/00-platform.md)）。本地 dev 用 **ID-Mapping 服务 + MySQL** 模拟 Flink/Doris；StreamPark / DolphinScheduler / Doris 为生产目标组件。
+目标架构（数据链路层级，自上而下；详见 [00-platform](./docs/00-platform.md)）。本地 dev 用 **ID-Mapping 服务 + MySQL** 模拟 Flink/Doris；StreamPark / DolphinScheduler / Doris 为生产目标组件。
 
 ```
 图 1 · 数据链路层级（接入 → Kafka → Flink → MySQL → Doris）
