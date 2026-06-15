@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Sparkles, X, Send, ArrowRight } from "lucide-react";
+import { Sparkles, X, Send, ArrowRight, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Spinner } from "../ui";
 import { useLang } from "../../context/LangContext";
 import { useTenant } from "../../context/TenantContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   chatAssistant,
   listAssistantTasks,
+  getAssistantHistory,
+  clearAssistantHistory,
   type ChatMessage,
   type ChatStep,
   type ChatTask,
@@ -25,12 +28,32 @@ interface UiMessage {
 export default function AssistantWidget() {
   const { tr } = useLang();
   const { tenant } = useTenant();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // 首次打开（或切换用户/租户）时，按用户加载历史聊天记录
+  useEffect(() => {
+    if (!open || !user) return;
+    const key = `${user.id}:${tenant}`;
+    if (loadedFor === key) return;
+    getAssistantHistory(user.id, tenant)
+      .then((hist) => setMessages(hist.map((m) => ({ role: m.role, content: m.content }))))
+      .catch(() => {})
+      .finally(() => setLoadedFor(key));
+  }, [open, user, tenant, loadedFor]);
+
+  async function clearHistory() {
+    if (!user) return;
+    if (!window.confirm(tr("清空与智能助手的聊天记录？", "Clear your assistant chat history?"))) return;
+    try { await clearAssistantHistory(user.id, tenant); } catch { /* ignore */ }
+    setMessages([]);
+  }
 
   // 新消息滚到底部
   useEffect(() => {
@@ -75,7 +98,7 @@ export default function AssistantWidget() {
     setLoading(true);
     try {
       const payload: ChatMessage[] = history.map((m) => ({ role: m.role, content: m.content }));
-      const res = await chatAssistant(tenant, payload);
+      const res = await chatAssistant(tenant, payload, user?.id);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: res.reply, steps: res.steps, task: res.task, agentName: res.agent_name, created: res.created },
@@ -113,14 +136,26 @@ export default function AssistantWidget() {
               <Sparkles className="h-4 w-4 text-brand-600" />
               {tr("智能助手", "Assistant")}
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-              aria-label={tr("关闭", "Close")}
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearHistory}
+                  className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  title={tr("清空记录", "Clear history")}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                aria-label={tr("关闭", "Close")}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* 消息列表 */}

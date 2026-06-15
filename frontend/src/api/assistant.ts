@@ -69,9 +69,26 @@ export interface McpToolsResponse {
 export async function chatAssistant(
   tenant_id: number,
   messages: ChatMessage[],
+  user_id?: number,
 ): Promise<ChatResponse> {
-  const { data } = await assistantHttp.post("/chat", { tenant_id, messages });
+  const { data } = await assistantHttp.post("/chat", { tenant_id, messages, user_id });
   return data;
+}
+
+export interface HistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+  agent?: string | null;
+  created_at?: string | null;
+}
+
+export async function getAssistantHistory(user_id: number, tenant_id: number, limit = 50): Promise<HistoryMessage[]> {
+  const { data } = await assistantHttp.get("/history", { params: { user_id, tenant_id, limit } });
+  return data.messages || [];
+}
+
+export async function clearAssistantHistory(user_id: number, tenant_id: number): Promise<void> {
+  await assistantHttp.delete("/history", { params: { user_id, tenant_id } });
 }
 
 export async function listAssistantTasks(): Promise<{ tasks: AssistantTask[] }> {

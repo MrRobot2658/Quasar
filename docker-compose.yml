@@ -171,6 +171,12 @@ services:
       SQL_ENGINE_URL: http://sql-engine:8000
       MCP_SERVER_PATH: /app/mcp/server.py
       MCP_SQL_ENGINE_URL: http://sql-engine:8000
+      # 聊天记录持久化（按用户）
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: agenticdatahub
+      MYSQL_PASSWORD: agenticdatahub123
+      MYSQL_DATABASE: agenticdatahub
       # MCP server 默认往 services/mcp/logs 写日志，但该目录以只读挂载，重定向到可写路径
       MCP_LOG_DIR: /tmp/mcp-logs
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}

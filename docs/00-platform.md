@@ -230,7 +230,8 @@
   - **general 通用** —— 产品答疑 + **页面导航**（无业务工具）。
 - **打开页面**：所有智能体都带 `open_page(path)` 工具；启动时从挂载的 `docs/page-routes.md`（compose `./docs/page-routes.md:/app/page-routes.md:ro`）**解析全部功能页面路由**注入系统提示，用户说「打开/前往/带我去 X 页面」时调用 `open_page`，前端 `AssistantWidget` 收到 `navigate` 后跳转并收起面板。导航 vs 新建由路由+提示区分（「打开某看板」走导航，「做一个看板」走 create）。
 - 响应含 `agent` / `agent_name`（前端显示「智能体 · X」标识）、`steps`（工具调用轨迹）、`task`、`created`（新建图表/看板 + 跳转路径）、`navigate`（要打开的页面）。
-- 端点：`POST /chat`、`GET /health`（含 agents 列表）、`GET /agents`、`GET /mcp/tools`（设置 → MCP 设置页展示）、`GET /tasks`。
+- **聊天记录持久化（按用户）**：`/chat` 带 `user_id`（登录用户）即把每轮「用户消息 + 助手回复」落 `assistant_messages` 表（assistant 服务直连 MySQL）；面板首次打开按 `user_id` 加载历史，头部「清空记录」可删除。用户间隔离。
+- 端点：`POST /chat`（含 user_id）、`GET /history` / `DELETE /history`（按用户）、`GET /health`（含 agents 列表）、`GET /agents`、`GET /mcp/tools`（设置 → MCP 设置页展示）、`GET /tasks`。表：`sql/migrate_assistant.sql`。
 - 降级：无 `DEEPSEEK_API_KEY` 或出错时返回友好提示，绝不 500。
 
 > 真实 vs Mock：**全真实**（对话、MCP 查询、建图表看板、发任务均落地）。

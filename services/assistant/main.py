@@ -20,6 +20,7 @@ import time
 from typing import Any
 
 import httpx
+import pymysql
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -39,6 +40,53 @@ MAX_TOOL_ITERS = 5
 
 _TOOL_SCHEMA_CACHE: list[dict] | None = None
 _TASK_STORE: list[dict] = []
+
+# ── 聊天记录持久化（按用户）─────────────────────────────────────────────────
+MYSQL_CFG = {
+    "host": os.getenv("MYSQL_HOST", "mysql"),
+    "port": int(os.getenv("MYSQL_PORT", "3306")),
+    "user": os.getenv("MYSQL_USER", "agenticdatahub"),
+    "password": os.getenv("MYSQL_PASSWORD", "agenticdatahub123"),
+    "database": os.getenv("MYSQL_DATABASE", "agenticdatahub"),
+    "charset": "utf8mb4",
+    "cursorclass": pymysql.cursors.DictCursor,
+}
+
+
+def _db():
+    return pymysql.connect(**MYSQL_CFG, autocommit=True)
+
+
+def _save_messages(tenant_id: int, user_id: int | None, rows: list[tuple]) -> None:
+    """rows: [(role, content, agent), ...]。无 user_id 或出错时静默跳过。"""
+    if not user_id or not rows:
+        return
+    try:
+        with _db() as conn, conn.cursor() as cur:
+            cur.executemany(
+                "INSERT INTO assistant_messages (tenant_id, user_id, role, content, agent) VALUES (%s,%s,%s,%s,%s)",
+                [(tenant_id, user_id, r, c, a) for (r, c, a) in rows],
+            )
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _load_history(tenant_id: int, user_id: int | None, limit: int = 50) -> list[dict]:
+    if not user_id:
+        return []
+    try:
+        with _db() as conn, conn.cursor() as cur:
+            cur.execute(
+                "SELECT role, content, agent, created_at FROM assistant_messages "
+                "WHERE tenant_id=%s AND user_id=%s ORDER BY id DESC LIMIT %s",
+                (tenant_id, user_id, min(max(limit, 1), 200)),
+            )
+            rows = cur.fetchall()[::-1]
+        for r in rows:
+            r["created_at"] = str(r.get("created_at")) if r.get("created_at") else None
+        return rows
+    except Exception:  # noqa: BLE001
+        return []
 
 # ── 智能体定义 ──────────────────────────────────────────────────────────────
 AGENT_DEFS: dict[str, dict] = {
@@ -116,6 +164,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     tenant_id: int
     messages: list[ChatMessage]
+    user_id: int | None = None
 
 
 # ── MCP 桥接 ────────────────────────────────────────────────────────────────
@@ -427,9 +476,37 @@ async def chat(req: ChatRequest) -> dict:
 
             reply, steps, task, created, navigate = await _agent_loop(messages, _agent_tools(agent), execute)
 
+        _persist_turn(req, reply, agent)
         return {**base, "reply": reply, "steps": steps, "task": task, "created": created, "navigate": navigate}
     except Exception as e:  # noqa: BLE001
-        return {**base, "reply": f"（智能助手处理出错：{e}）", "steps": [], "task": None, "created": None, "navigate": None}
+        reply = f"（智能助手处理出错：{e}）"
+        _persist_turn(req, reply, agent)
+        return {**base, "reply": reply, "steps": [], "task": None, "created": None, "navigate": None}
+
+
+def _persist_turn(req: ChatRequest, reply: str, agent: str) -> None:
+    """保存本轮：最新用户消息 + 助手回复（按 user_id）。"""
+    last_user = next((m.content for m in reversed(req.messages) if m.role == "user"), "")
+    rows = []
+    if last_user:
+        rows.append(("user", last_user, None))
+    rows.append(("assistant", reply, agent))
+    _save_messages(req.tenant_id, req.user_id, rows)
+
+
+@app.get("/history")
+async def history(user_id: int, tenant_id: int, limit: int = 50) -> dict:
+    return {"messages": _load_history(tenant_id, user_id, limit)}
+
+
+@app.delete("/history")
+async def clear_history(user_id: int, tenant_id: int) -> dict:
+    try:
+        with _db() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM assistant_messages WHERE tenant_id=%s AND user_id=%s", (tenant_id, user_id))
+    except Exception:  # noqa: BLE001
+        pass
+    return {"ok": True}
 
 
 @app.get("/tasks")
