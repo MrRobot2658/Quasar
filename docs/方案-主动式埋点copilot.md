@@ -118,6 +118,7 @@ res: { suggestion: { title, message, action? , confidence } | null }
 | 新建分群页久留无保存 | Audiences | 「直接告诉我你想圈的人群,我来生成并预估规模」 |
 | 刚 ETL 导入成功 | Objects/ETL | 「数据导好了,下一步要不要建个分群或看 Profiles?」 |
 | 反复进出 Dashboards 没建图 | Analyst | 「要我帮你建一个常用看板吗?」 |
+| 任意页面长时间停留无操作(idle,默认 20s) | 全部 | 主动问候 + 结合本页用途给出具体帮助方向(LLM 生成) |
 | 浏览 Identity/Merge Log | Unify | 「需要我解释这条 OneID 的合并规则吗?」 |
 | API 5xx | 任意 | 「服务好像有点问题,要不要换个条件再试?」 |
 

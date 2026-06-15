@@ -610,6 +610,8 @@ def _detect_signal(req: ObserveRequest) -> tuple[str | None, str]:
             return "stuck_creating", page_path
         if page_path.startswith("/analyst"):
             return "stuck_analyst", page_path
+        # 任意页面长时间停留无操作 → 主动问询（结合页面用途）
+        return "dwell", page_path
     # 首次进入高价值页（page_view 命中提示页）
     for e in events:
         if e.type == "page_view" and (e.path or "") in PAGE_TIPS:
@@ -619,9 +621,13 @@ def _detect_signal(req: ObserveRequest) -> tuple[str | None, str]:
 
 def _template_suggestion(signal: str, path: str) -> dict | None:
     """无 LLM / LLM 失败时的固定文案降级（与 AGENT_LLM_ENABLED=0 降级思路一致）。"""
-    if signal == "explain_page":
-        title, msg = PAGE_TIPS.get(path, ("提示", "需要我帮你看看这个页面吗？"))
+    # 高价值页有专属文案时优先用（首次进入 explain_page，或在该页停留 dwell）
+    if signal in ("explain_page", "dwell") and path in PAGE_TIPS:
+        title, msg = PAGE_TIPS[path]
         return {"title": title, "message": msg, "action": {"type": "none"}, "confidence": 0.6}
+    if signal == "dwell":
+        return {"title": "需要帮忙吗？", "message": "在这页停留一会儿了，要我帮你查点什么、或解释下这个页面能做什么吗？",
+                "action": {"type": "none"}, "confidence": 0.55}
     base = {
         "error": {"title": "出错了？", "message": "刚才那步好像出错了，要我帮你排查或换个条件再试吗？",
                   "action": {"type": "prefill", "text": "帮我看看刚才为什么出错"}},
@@ -660,9 +666,12 @@ async def _copilot_suggest(req: ObserveRequest, signal: str, path: str) -> dict 
         f"{e.type}@{e.path or path}" + (f"({_summarize(e.payload, 80)})" if e.payload else "")
         for e in req.events[-12:])
     pages = "\n".join(f"- {p} — {label}" for p, label in PAGE_CATALOG)
+    nudge = ("这是『在该页停留较久且无操作』信号——请主动、简短地问候一句，"
+             "结合本页用途给出具体的帮助方向（通常 should_suggest=true；除非是登录页等不宜打扰的场景）。"
+             if signal in ("dwell", "stuck_creating", "stuck_analyst") else
+             "若此刻打扰用户弊大于利，should_suggest 设为 false。")
     user = (f"当前页面：{path}（{page_name}）。\n命中信号：{signal}。\n最近行为：{ev_lines}\n"
-            f"参考建议（可改写或否决）：{(tmpl or {}).get('message', '')}\n可用页面路由：\n{pages}\n"
-            "如果此刻不该打扰用户，should_suggest 设为 false。")
+            f"参考建议（可改写或否决）：{(tmpl or {}).get('message', '')}\n可用页面路由：\n{pages}\n{nudge}")
     try:
         msg = await _deepseek_chat([{"role": "system", "content": COPILOT_SYSTEM},
                                     {"role": "user", "content": user}])
