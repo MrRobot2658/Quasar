@@ -146,6 +146,9 @@ services:
     image: node:20-bookworm-slim
     container_name: agenticdatahub-frontend-build
     working_dir: /app
+    environment:
+      # nginx 网关把 SPA 挂在 /console/ 下，构建产物的资源路径与路由 basename 都要带该前缀
+      VITE_BASE: /console/
     volumes:
       - ./frontend:/app
       - /app/node_modules

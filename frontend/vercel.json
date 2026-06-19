@@ -1,13 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://sql-engine-production.up.railway.app/:path*"
-    },
-    {
-      "source": "/assistant/:path*",
-      "destination": "https://assistant-production-d2f4.up.railway.app/:path*"
-    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
