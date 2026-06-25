@@ -1,12 +1,12 @@
-# Data Agent · 多数据源计算存储智能代理
+# Quasar · 多数据源计算存储智能代理
 
-**Data Agent** 的产品定位是**多数据源计算存储智能代理——为 Agent 提供数据底座**。把散落在各处的数据（数据库/数仓/数据湖/对象存储/消息/API/文件）**统一接入、自动清洗、灵活转化、高性能计算**，以 AI Agent 为自然语言操作入口。向上对 Agent 暴露**结构化数据接口**（OneID 画像宽表 / 圈人结果 / 聚合指标），让上层 Agent 无需关心数据从哪来、怎么算——只管基于高质量的画像和标签做决策。支持**计算存储分离**（计算集群弹性扩缩，Doris 存算分离）也支持**一体化部署**（单机开箱即用），默认存储引擎为 **Apache Doris**。在此之上，多租户隔离、实时 ID-Mapping / OneID 归一、统一画像宽表、圈人激活、数据治理与隐私合规都是开箱功能。并带一套**对标 [Twilio Segment](https://www.twilio.com/docs/segment) 的控制台**作为应用层（连接 → 用户 → 对象 → 客户 → 触达 → 协议 → 隐私 → 监控 → 知识库 → 应用 → 分析）。
+**Quasar** 的产品定位是**多数据源计算存储智能代理——为 Agent 提供数据底座**。把散落在各处的数据（数据库/数仓/数据湖/对象存储/消息/API/文件）**统一接入、自动清洗、灵活转化、高性能计算**，以 AI Agent 为自然语言操作入口。向上对 Agent 暴露**结构化数据接口**（OneID 画像宽表 / 圈人结果 / 聚合指标），让上层 Agent 无需关心数据从哪来、怎么算——只管基于高质量的画像和标签做决策。支持**计算存储分离**（计算集群弹性扩缩，Doris 存算分离）也支持**一体化部署**（单机开箱即用），默认存储引擎为 **Apache Doris**。在此之上，多租户隔离、实时 ID-Mapping / OneID 归一、统一画像宽表、圈人激活、数据治理与隐私合规都是开箱功能。并带一套**对标 [Twilio Segment](https://www.twilio.com/docs/segment) 的控制台**作为应用层（连接 → 用户 → 对象 → 客户 → 触达 → 协议 → 隐私 → 监控 → 知识库 → 应用 → 分析）。
 
 > **本地全栈即跑、登录即用**：控制台带**强制登录门禁**（团队成员即登录账号，挂在 workspace 下）；右上角常驻**智能助手**（DeepSeek 对话 + 桥接 MCP 工具 + 后台任务）；可视化编排走**真实 Apache Airflow** 调度；数据源覆盖 **44 个主流连接器**（数据库/数仓/数据湖/对象存储/消息/查询引擎）；并内置**知识库（云盘式多模态存储）**、**应用市场**、**分析看板（NL 一句话生成图表/看板）**。
 
 > **名字含义**：**Agent** —— DeepSeek 驱动的自然语言圈人/查询与 MCP 工具，让 LLM 安全地操作数据平台（候选 DSL 必须过校验层，绝不直出 SQL）；**DataHub** —— 多源数据接入的归一中枢，把小程序/企微/表单/App/批量导入等多渠道数据，实时归一为 OneID 并打宽成统一画像。
 
-**仓库**：https://github.com/MrRobot2658/dataagent
+**仓库**：https://github.com/MrRobot2658/Quasar
 
 > 设计文档（均在 [`docs/`](./docs/README.md) 下，按一级目录分模块）：1 平台底座 + 9 业务模块 + 3 扩展菜单（[知识库](./docs/10-knowledge.md) / [应用](./docs/11-apps.md) / [分析](./docs/12-analyst.md)），各含 详细/技术设计 + TODOs。实时链路架构/规模 → [00-platform](./docs/00-platform.md)；ID-Mapping 画像伸缩 / MCP 调用链路 → [02-unify](./docs/02-unify.md)。· [OpenAPI](./swagger/) · [前端说明](./frontend/README.md)
 
@@ -50,8 +50,8 @@
 
 | 组件 | 端口 | 说明 |
 |------|------|------|
-| Nginx 网关 | 8080 | 首页 + Data Agent 控制台 + API 路由代理 |
-| Data Agent 控制台（前端） | 8080/console/ | 对标 Segment 的 React SPA（生产）；dev 用 5173 |
+| Nginx 网关 | 8080 | 首页 + Quasar 控制台 + API 路由代理 |
+| Quasar 控制台（前端） | 8080/console/ | 对标 Segment 的 React SPA（生产）；dev 用 5173 |
 | SQL Engine | 8002 | OLAP 查询层 + Agent（模板 SQL + DSL 圈人 + NL 圈人 + 只读 MCP，与 Doris 解耦） |
 | ID-Mapping | 8001 | 实时合并服务 API（OneID 识别 / merge） |
 | MySQL 8 | 3308 | 业务库：id_mapping / user_profile / user_groups / merge_log / object_* |
@@ -138,7 +138,7 @@
 
 **打开页面**：助手默认加载 `docs/page-routes.md`（全部功能页面路由），用户说「打开/前往 X 页面」即调用 `open_page` 跳转。回复带「智能体 · X」标识；建好的图表/看板可一键跳转。服务独立（`:8004`）；DeepSeek 不可用时降级。
 
-**主动式埋点 Copilot** —— 助手不只被动等问：前端埋点采集左侧页面行为，近实时推给助手（`POST /observe`），经启发式门控 + LLM 判断后**主动**弹出建议（如**任意页面长时间停留**会主动问询、空结果时建议放宽条件、报错时帮排查）。两层门控控成本，只产出「建议 + action」不自动写，侧边栏铃铛可免打扰。详见 [docs/方案-主动式埋点copilot.md](docs/方案-主动式埋点copilot.md)。
+**主动式埋点 Copilot** —— 助手不只被动等问：前端埋点采集左侧页面行为，近实时推给助手（`POST /observe`），经启发式门控 + LLM 判断后**主动**弹出建议（如**任意页面长时间停留**会主动问询、空结果时建议放宽条件、报错时帮排查）。两层门控控成本，只产出「建议 + action」不自动写，侧边栏铃铛可免打扰。
 
 ### 登录 Auth `真实`（强制门禁）
 控制台**强制登录**：团队成员（IAM users）即登录账号，挂在 workspace（租户）下；邮箱+密码登录，登录后 workspace 切到该用户租户，右上角显示用户 + 登出。演示账号 `admin@acme.com` / 密码 `demo123`（详见「使用规则」）。
@@ -156,8 +156,8 @@
 
 ```bash
 # 0. 克隆
-git clone https://github.com/MrRobot2658/dataagent.git   # 或 SSH: git@github.com:MrRobot2658/dataagent.git
-cd dataagent
+git clone https://github.com/MrRobot2658/Quasar.git   # 或 SSH: git@github.com:MrRobot2658/Quasar.git
+cd Quasar
 
 # 1. 启动全栈（含前端构建）
 #    MySQL/Redis/Kafka/SQL Engine/ID-Mapping/Nginx/Airflow/智能助手 + 前端生产构建
@@ -189,8 +189,8 @@ cd frontend && npm install && npm run dev   # → http://localhost:5173/
 
 | 用途 | 地址 |
 |------|------|
-| Data Agent 控制台（开发态） | http://localhost:5173/ |
-| Data Agent 控制台（生产/网关） | http://localhost:8080/console/ |
+| Quasar 控制台（开发态） | http://localhost:5173/ |
+| Quasar 控制台（生产/网关） | http://localhost:8080/console/ |
 | SQL Engine Swagger | http://localhost:8002/docs |
 | ID-Mapping Swagger | http://localhost:8001/docs |
 | Airflow UI | http://localhost:8088/ · 账号 `admin` / `admin` |
