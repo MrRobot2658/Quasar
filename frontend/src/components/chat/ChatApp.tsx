@@ -181,7 +181,7 @@ export default function ChatApp() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-400 text-white">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-gray-900">Data Agent</span>
+          <span className="text-sm font-bold tracking-tight text-gray-900">Quasar</span>
         </div>
         <div className="px-3">
           <button

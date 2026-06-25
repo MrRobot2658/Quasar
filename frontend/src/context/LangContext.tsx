@@ -5,7 +5,7 @@ export type Lang = "zh" | "en";
 // 框架层（App Shell）多语言文案。页面正文暂以中文为主，可按需扩充。
 const DICT = {
   workspace: { zh: "工作区", en: "Workspace" },
-  brandSub: { zh: "智能实时数据底座", en: "Intelligent Real-time Data Foundation" },
+  brandSub: { zh: "多数据源计算存储智能代理", en: "Multi-source Compute & Storage Agent" },
   footer: { zh: "sql-engine · DSL 引擎", en: "sql-engine · DSL Engine" },
   search: { zh: "搜索 Sources / Audiences / Profiles…", en: "Search Sources / Audiences / Profiles…" },
   tenant: { zh: "租户", en: "Tenant" },
