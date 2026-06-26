@@ -41,7 +41,8 @@ export type ChatView =
   | { type: "audience"; query: string }
   | { type: "table"; object: string; query?: string }
   | { type: "chart"; question: string }
-  | { type: "chain"; object: string; id: string; max_hops?: number };
+  | { type: "chain"; object: string; id: string; max_hops?: number }
+  | { type: "feedback"; topic: "segment" | "tag" | "quality" | "insight" | "field"; object_type?: string };
 
 export interface ChatResponse {
   reply: string;

@@ -63,6 +63,8 @@ from scheduler_api import router as scheduler_router
 from kb_api import router as kb_router
 from apps_api import router as apps_router
 from analyst_api import router as analyst_router
+from feedback_api import router as feedback_router
+from feedback import FeedbackService
 
 TAGS = [
     {"name": "系统", "description": "健康检查"},
@@ -87,6 +89,7 @@ dsl_engine = DslEngine(object_service)
 segment_service = SegmentService(executor if hasattr(executor, "config") else None)
 nl_agent = NlSegmentAgent(dsl_engine, object_service)
 etl_service = EtlService(object_service)
+feedback_service = FeedbackService(executor if hasattr(executor, "config") else None)
 
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
@@ -472,8 +475,21 @@ def save_segment(body: SegmentSaveRequest):
         raise HTTPException(status_code=400, detail={"msg": "DSL 校验失败", "errors": val["errors"]})
     est = dsl_engine.estimate(body.dsl | {"tenant_id": body.tenant_id})
     try:
-        return segment_service.save(body.tenant_id, body.segment_code, body.segment_name,
-                                    body.dsl, est["estimate"], body.source)
+        saved = segment_service.save(body.tenant_id, body.segment_code, body.segment_name,
+                                     body.dsl, est["estimate"], body.source)
+        # 反馈埋点（不阻塞保存）：标签圈选频次 + 画像字段消费
+        try:
+            conds = body.dsl.get("conditions", []) or []
+            tag_codes = [v for c in conds if c.get("field") == "tags"
+                         for v in (c["value"] if isinstance(c.get("value"), list) else [c.get("value")]) if v]
+            if tag_codes:
+                feedback_service.log_tag_usage(body.tenant_id, body.segment_code, [str(t) for t in tag_codes])
+            fields = [c.get("field") for c in conds if c.get("field")]
+            if fields:
+                feedback_service.record_field_access(body.tenant_id, body.dsl.get("object", "user"), fields)
+        except Exception:  # noqa: BLE001
+            pass
+        return saved
     except Exception as e:
         if "Duplicate" in str(e):
             raise HTTPException(status_code=409, detail="Segment 编码已存在")
@@ -510,8 +526,21 @@ def agent_draft(body: AgentDraftRequest):
 def agent_confirm(body: AgentConfirmRequest):
     """用户确认候选规则 → 走保存链路（source=nl-agent）"""
     try:
-        return nl_agent.confirm(body.tenant_id, body.segment_code, body.segment_name,
-                                body.rule, segment_service)
+        saved = nl_agent.confirm(body.tenant_id, body.segment_code, body.segment_name,
+                                 body.rule, segment_service)
+        try:
+            rule = body.rule if isinstance(body.rule, dict) else {}
+            conds = rule.get("conditions", []) or []
+            tag_codes = [v for c in conds if c.get("field") == "tags"
+                         for v in (c["value"] if isinstance(c.get("value"), list) else [c.get("value")]) if v]
+            if tag_codes:
+                feedback_service.log_tag_usage(body.tenant_id, body.segment_code, [str(t) for t in tag_codes])
+            fields = [c.get("field") for c in conds if c.get("field")]
+            if fields:
+                feedback_service.record_field_access(body.tenant_id, rule.get("object", "user"), fields)
+        except Exception:  # noqa: BLE001
+            pass
+        return saved
     except ObjectError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -537,6 +566,7 @@ app.include_router(scheduler_router)
 app.include_router(kb_router)
 app.include_router(apps_router)
 app.include_router(analyst_router)
+app.include_router(feedback_router)
 
 
 def custom_openapi():

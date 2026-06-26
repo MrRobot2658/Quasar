@@ -222,7 +222,7 @@ export default function ChatApp() {
       </aside>
 
       {/* 右列：TailAdmin 顶栏 + 对话主区 */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* 顶栏：左=管理员登录信息，右=租户 logo + 语言 */}
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-5 py-2.5">
           <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function ChatApp() {
         </header>
 
       {/* 对话主区 */}
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div ref={listRef} className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl space-y-5 px-4 py-5">
             {/* 新会话首页：清空页面，仅展示常见任务（无消息时）*/}
@@ -326,7 +326,7 @@ export default function ChatApp() {
         </div>
 
         {/* 输入区 */}
-        <div className="border-t border-gray-200 bg-white px-4 py-3">
+        <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-3">
           <div className="mx-auto max-w-3xl">
             {attachments.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-1.5">

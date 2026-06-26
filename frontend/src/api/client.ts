@@ -133,3 +133,37 @@ export async function listSegments(tenant: number) {
   const { data } = await http.get(`/segments/${tenant}`);
   return data as any[];
 }
+
+// ── 反馈闭环（docs/13-feedback-loop.md）：先触发聚合(POST)，再取展示数据(GET) ──
+export async function fetchFeedback(
+  tenant: number,
+  topic: "segment" | "tag" | "quality" | "insight" | "field",
+  objectType = "user",
+): Promise<{ rows: any[]; extra?: any }> {
+  const p = { params: { tenant_id: tenant } };
+  if (topic === "segment") {
+    await http.post(`/feedback/segment/aggregate`, null, p).catch(() => {});
+    const { data } = await http.get(`/feedback/segment/quality`, p);
+    return { rows: data.segments || [] };
+  }
+  if (topic === "tag") {
+    await http.post(`/feedback/tag/aggregate`, null, p).catch(() => {});
+    const { data } = await http.get(`/feedback/tag/health`, p);
+    return { rows: data.tags || [] };
+  }
+  if (topic === "quality") {
+    for (const o of ["user", "lead", "account", "order"])
+      await http.post(`/feedback/quality/scan`, null, { params: { tenant_id: tenant, object_type: o } }).catch(() => {});
+    const { data } = await http.get(`/feedback/quality/report`, p);
+    return { rows: data.checks || [], extra: { overall: data.overall_score, byObject: data.object_scores } };
+  }
+  if (topic === "insight") {
+    await http.post(`/feedback/insight/detect`, null, p).catch(() => {});
+    const { data } = await http.get(`/feedback/insight/findings`, p);
+    return { rows: data.findings || [] };
+  }
+  // field
+  await http.post(`/feedback/field/scan`, null, { params: { tenant_id: tenant, object_type: objectType } }).catch(() => {});
+  const { data } = await http.get(`/feedback/field/health`, { params: { tenant_id: tenant, object_type: objectType } });
+  return { rows: data.fields || [] };
+}

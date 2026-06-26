@@ -330,7 +330,19 @@ SHOW_CHART_TOOL = {"type": "function", "function": {
         "question": {"type": "string", "description": "对图表的描述，如：按渠道看用户分布的柱状图"},
     }, "required": ["question"]}}}
 
-SHOW_TOOLS = [SHOW_PROFILE_TOOL, SHOW_AUDIENCE_TOOL, SHOW_TABLE_TOOL, SHOW_CHART_TOOL]
+SHOW_FEEDBACK_TOOL = {"type": "function", "function": {
+    "name": "show_feedback",
+    "description": "在对话里渲染「反馈闭环」卡片，展示下游回传后的资产健康度。topic 选："
+                   "segment(人群触达效果/质量分)、tag(标签权重/转化/该归档的)、quality(数据质量分)、"
+                   "insight(SKU断崖/客群漂移等异常发现)、field(画像字段填充率/该补缺或淘汰的)。",
+    "parameters": {"type": "object", "properties": {
+        "topic": {"type": "string", "enum": ["segment", "tag", "quality", "insight", "field"],
+                  "description": "反馈主题"},
+        "object_type": {"type": "string",
+                        "description": "field 主题用：对象类型(user/lead/account/order)，默认 user"},
+    }, "required": ["topic"]}}}
+
+SHOW_TOOLS = [SHOW_PROFILE_TOOL, SHOW_AUDIENCE_TOOL, SHOW_TABLE_TOOL, SHOW_CHART_TOOL, SHOW_FEEDBACK_TOOL]
 
 # ── 写操作工具（高频，安全可回滚）─────────────────────────────────────────────
 SAVE_AUDIENCE_TOOL = {"type": "function", "function": {
@@ -434,6 +446,11 @@ def _local_exec(name: str, args: dict, tid: int):
     if name == "show_chart":
         q = (args.get("question") or "").strip()
         return {"shown": "chart", "question": q}, {"view": {"type": "chart", "question": q}}
+    if name == "show_feedback":
+        topic = (args.get("topic") or "segment").strip()
+        obj = (args.get("object_type") or "user").strip()
+        return ({"shown": "feedback", "topic": topic},
+                {"view": {"type": "feedback", "topic": topic, "object_type": obj}})
     return None, None
 
 
