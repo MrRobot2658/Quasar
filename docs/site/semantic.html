@@ -72,7 +72,7 @@
       <p>语义融合的第二块也已落地：<code>GET /api/semantic/entity?object=account&amp;id=A3001</code> 把一个实体的<b>结构化数据 + 关联对象（外键关系）+ 关联知识（<a href="10-knowledge.html">知识库</a>挂到该对象的文档）</b>组装成统一上下文包。对话里问「把客户 A3001 的完整上下文给我」→ 助手用 <code>entity_context</code> 工具取整包，综合「客户概况 + 关联用户 + 关联质检报告」作答——即 Entity Hub 把同一实体在 DB 与 KB 中的存在对齐。</p>
       <h4>Relationship Cross-linking：关系跨链归因链</h4>
       <p>第三块也已落地：<code>GET /api/semantic/chain?object=account&amp;id=A3001</code> 从实体出发沿关系图<b>多跳遍历（正/反向外键）</b>，合并为一张 nodes + edges 图，<b>每个节点聚合其关联知识文档</b>——把 DB 关系与 KB 知识跨链成一条可走的归因链。对话里说「从客户 A3001 走一条归因链」→ 助手用 <code>relation_chain</code> 工具：起点(含质检报告) → 第1跳(用户/产品) → 第2跳(订单/门店/线索)… 串成链路叙述。实测从 A3001 展开 11 节点 / 23 边 / 3 跳。</p>
-      <figure class="fig"><img src="assets/shots/sc7-chain.png" alt="归因链可视化" loading="lazy"><figcaption>对话里的关系归因链：分跳 SVG 关系图（节点按对象类型着色、关联知识 📎 角标、边标关系名）</figcaption></figure>
+      <figure class="fig"><img src="assets/shots/chain-graph.png" alt="关系归因链可视化" loading="lazy"><figcaption>关系归因链：从客户「上海制造集团」沿外键关系多跳展开（purchased/owns/contains/placed…），节点按对象类型着色，关联知识「B202603 质检报告.pdf」挂在起点</figcaption></figure>
       <div class="callout"><b>三块齐备</b> · Entity Hub（实体对齐）· Property Federation（指标绑口径/公式/知识）· Relationship Cross-linking（关系跨链归因）——「数据 × 语义 × 知识」的语义融合层已从愿景走到可用闭环，全部可经对话驱动。</div>
     </section>
 
