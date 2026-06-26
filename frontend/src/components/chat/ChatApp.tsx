@@ -2,14 +2,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sparkles, Send, Plus, Trash2, Paperclip, X, ChevronDown, LogOut, Bot, MessageCircleQuestion,
-  UserSearch, Filter, BarChart3, MapPin, Settings, LayoutDashboard, type LucideIcon,
+  UserSearch, Filter, BarChart3, MapPin, Settings, type LucideIcon,
 } from "lucide-react";
 import { Spinner } from "../ui";
 import Markdown from "../assistant/Markdown";
 import ViewCard from "./cards/ViewCard";
 import SettingsPanel from "./SettingsPanel";
 import WelcomeGreeting from "./WelcomeGreeting";
-import DashboardModal from "./DashboardModal";
 import { ChatActionCtx } from "../../context/ChatActionContext";
 import { getMemory, addTokens } from "../../lib/prefs";
 import { useLang, type Lang } from "../../context/LangContext";
@@ -51,7 +50,6 @@ export default function ChatApp() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [convId, setConvId] = useState<string>(newId());
   const [messages, setMessages] = useState<UiMessage[]>([]);
-  const [board, setBoard] = useState<{ open: boolean; id?: string }>({ open: false });
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [mode, setMode] = useState<ChatMode>("agent");
@@ -159,9 +157,6 @@ export default function ChatApp() {
           { role: "assistant", content: res.reply, steps: res.steps, task: res.task, agentName: res.agent_name, created: res.created, views: res.views },
         ]);
         if (res.task?.run_id) pollTask(res.task.run_id);
-        // 看板查看器：助手新建看板，或导航到分析/看板 → 直接打开（对话形态无独立页面）
-        if (res.created?.kind === "dashboard") setBoard({ open: true, id: res.created.id });
-        else if (/analyst|dashboard|看板/.test(res.navigate?.path || "")) setBoard({ open: true });
         refreshConversations();
       } catch (e: any) {
         const errText = e?.response?.data?.detail || e?.message || tr("请求失败", "Request failed");
@@ -194,13 +189,6 @@ export default function ChatApp() {
             className="flex w-full items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:border-brand-300 hover:bg-brand-50"
           >
             <Plus className="h-4 w-4" /> {tr("新会话", "New chat")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setBoard({ open: true })}
-            className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-          >
-            <LayoutDashboard className="h-4 w-4" /> {tr("看板", "Dashboards")}
           </button>
         </div>
         <div className="mt-2 flex-1 space-y-1 overflow-y-auto px-2 py-1">
@@ -387,9 +375,6 @@ export default function ChatApp() {
 
       {/* 设置弹层（含 数据源 / 知识库 / 记忆 / 技能 / MCP / Token）*/}
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-
-      {/* 看板查看器：NL 生成/「打开看板」时打开（对话形态无独立分析页）*/}
-      <DashboardModal open={board.open} id={board.id} onClose={() => setBoard({ open: false })} />
     </div>
     </ChatActionCtx.Provider>
   );
