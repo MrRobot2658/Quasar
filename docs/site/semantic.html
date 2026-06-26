@@ -57,6 +57,20 @@
     </section>
 
     <section>
+      <h3>已实现：指标语义层（数据 × 语义结合）<span class="b real">默认功能</span></h3>
+      <p class="lead">语义融合的第一块已落地——<b>指标不再只是数字</b>，每个指标都绑定「业务口径 + 计算公式 + 关联知识文档」（即 Property Federation 的最小实现）。</p>
+      <table>
+        <tr><th>构成</th><th>含义</th><th>示例（退款率）</th></tr>
+        <tr><td>取值（数据）</td><td>由度量 → 参数化 SQL → OLAP 实时计算</td><td><code>33.33%</code></td></tr>
+        <tr><td>口径 definition（语义）</td><td>业务定义，治理单一真相</td><td>退款订单数 ÷ 订单总数（status=refunded）</td></tr>
+        <tr><td>公式 formula</td><td>可追溯的计算表达式</td><td><code>refunded_order_count / orders</code></td></tr>
+        <tr><td>关联知识 knowledge</td><td>绑定到<a href="10-knowledge.html">知识库</a>口径文档</td><td><code>退款率定义.md</code></td></tr>
+      </table>
+      <p>接口：<code>GET /api/semantic/metrics</code>（指标目录 + 口径）· <code>GET /api/semantic/metrics/values</code>（取值）· <code>GET /api/semantic/explain?q=退款率</code>（取值+口径+公式+知识 一次返回）。<b>LLM 绝不直出 SQL</b>——指标由注册表声明、编译为参数化 SQL。</p>
+      <div class="callout"><b>对话闭环</b> · 在<a href="assistant.html">智能助手</a>问「退款率现在多少？口径和算法是什么？」→ 直接返回 <b>取值 33.33% + 口径 + 公式 + 关联文档「退款率定义.md」</b>，并可顺势下钻归因。这正是「数据×语义×Agent」的最小可用闭环。</div>
+    </section>
+
+    <section>
       <h3>一、问题：数据平台只走了第一公里</h3>
       <p>大多数数据平台（含传统 CDP / BI）只有一层 <b>SQL 层</b>：你问什么它查什么，但它不知道「退款率」是什么意思、8% 是否异常、退款和批次质量有没有关系。AI Agent 出现后，<b>Agent 能写 SQL，但依然不懂业务</b>——它能输出「退款率 8.2%」，却无法回答「给我分析一下」，因为它不知道 SKU 背后有供应链、批次里有质检报告。</p>
       <p>数据平台只告诉你「发生了什么」，剩下的「为什么、怎么办」全靠人来走。缺少的，就是<b>语义层</b>。</p>
