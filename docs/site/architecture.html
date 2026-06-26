@@ -97,6 +97,7 @@
         <tr><td>Airflow</td><td><code>8088</code></td><td>「可视化编排」真实调度后端（admin/admin），经 REST API 触发 DAG</td></tr>
         <tr><td>智能助手 assistant</td><td><code>8004</code></td><td>多智能体：路由 → 数据查询/分析/任务/通用</td></tr>
       </table>
+      <figure class="fig"><img src="assets/shots/settings-arch.png" alt="控制台 · 数据架构分层" loading="lazy"><figcaption>控制台「设置」按数据链路分层呈现：数据源(业务库/数仓) · 应用(上下游) · 实时链路(Flink) · 队列(Kafka) · 任务(Airflow) · 知识库</figcaption></figure>
       <div class="callout"><b>标注约定</b> · <span class="b real">真实</span> = 走 SQL Engine → MySQL 的实时查询，操作即落库；<span class="b mock">Mock</span> = 纯前端演示数据（页面右上有「Mock 数据」角标），后端尚未接入（路线图）。</div>
     </section>
 
